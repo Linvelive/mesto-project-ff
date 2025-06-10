@@ -1,160 +1,117 @@
-// @todo: Темплейт карточки
-
-// @todo: DOM узлы
-
-// @todo: Вывести карточки на страницу
-import "../styles/index.css"; // добавьте импорт главного файла стилей
-import { initialCards } from "./cards";
+// Import styles and initial data
+import "../styles/index.css";
+import { initialCards } from "./components/cards.js";
 import avatar from "../images/avatar.jpg";
 import logo from "../images/logo.svg";
 
-document.querySelector(
-  ".profile__image"
-).style.backgroundImage = `url(${avatar})`;
-document.querySelector(".header__logo").src = logo;
+// Import functions from other modules
+import { openPopup, closePopup, setClosePopupListeners } from "./components/modal.js";
+import { createCard, handleDelete, handleLikeClick } from "./components/card.js";
 
-const cardList = document.querySelector(".places__list");
+// --- DOM Nodes ---
 
-//модалки
-const editModal = document.querySelector(".popup_type_edit");
-const addModal = document.querySelector(".popup_type_new-card");
-const imageModal = document.querySelector(".popup_type_image");
-const popUpImage = imageModal.querySelector(".popup__image");
-const popUpCaption = imageModal.querySelector(".popup__caption");
-const editButton = document.querySelector(".profile__edit-button");
-const addButton = document.querySelector(".profile__add-button");
-const formElement = document.querySelector(".popup__form");
-const jobInput = document.querySelector(".popup__input_type_description");
-const nameInput = document.querySelector(".popup__input_type_name");
+// Profile elements
+const profileImage = document.querySelector(".profile__image");
 const profileTitle = document.querySelector(".profile__title");
 const profileDescription = document.querySelector(".profile__description");
-const editPopup = document.querySelector(".popup_type_edit");
+const editButton = document.querySelector(".profile__edit-button");
+const addButton = document.querySelector(".profile__add-button");
 
-// функция создания карточки
-function createCard(data, onDelete, onLike) {
-  const cardTemplate = document.querySelector("#card-template").content;
-  const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
+// Card list container
+const cardList = document.querySelector(".places__list");
 
-  const cardImage = cardElement.querySelector(".card__image");
-  const cardTitle = cardElement.querySelector(".card__title");
-  const deleteButton = cardElement.querySelector(".card__delete-button");
-  const formElement = document.querySelector(".popup__form");
+// Popups and their elements
+const editModal = document.querySelector(".popup_type_edit");
+const addModal = document.querySelector(".popup_type_new-card");
 
-  console.log(cardImage);
+// Form elements for edit profile popup
+const editProfileForm = editModal.querySelector(".popup__form");
+const nameInput = editProfileForm.querySelector(".popup__input_type_name");
+const jobInput = editProfileForm.querySelector(
+  ".popup__input_type_description"
+);
 
-  cardImage.src = data.link;
-  cardImage.alt = data.name;
-  cardTitle.textContent = data.name;
-  deleteButton.addEventListener("click", () => {
-    onDelete(cardElement);
-  });
+// Form elements for add new card popup
+const addCardForm = addModal.querySelector(".popup__form");
+const placeNameInput = addCardForm.querySelector(
+  ".popup__input_type_card-name"
+);
+const placeLinkInput = addCardForm.querySelector(".popup__input_type_url");
 
-  cardImage.addEventListener("click", () => {
-    imageModal.classList.add("popup_is-opened");
-    popUpImage.src = data.link;
-    popUpCaption.textContent = data.name;
-  });
+// --- Initial Setup ---
 
-  const likeButton = cardElement.querySelector(".card__like-button");
-  likeButton.addEventListener("click", () => {
-  onLike(likeButton);
-  });
+// Set profile image and header logo
+profileImage.style.backgroundImage = `url(${avatar})`;
+document.querySelector(".header__logo").src = logo;
 
-  return cardElement;
+// Set up general popup closing listeners (escape, overlay, close button)
+setClosePopupListeners();
+
+// --- Event Handlers ---
+
+/**
+ * Handles the submission of the edit profile form.
+ * Updates profile title and description with input values.
+ * @param {Event} evt - The form submission event.
+ */
+function handleEditProfileSubmit(evt) {
+  evt.preventDefault(); // Prevent default form submission behavior
+
+  // Update profile text content with current input values
+  profileTitle.textContent = nameInput.value;
+  profileDescription.textContent = jobInput.value;
+
+  closePopup(editModal); // Close the edit profile popup
 }
 
-const addForm = addModal.querySelector(".popup__form");
-const placeNameInput = addForm.querySelector(".popup__input_type_card-name");
-const placeLinkInput = addForm.querySelector(".popup__input_type_url");
+/**
+ * Handles the submission of the add new card form.
+ * Creates a new card and adds it to the beginning of the card list.
+ * @param {Event} evt - The form submission event.
+ */
+function handleAddCardSubmit(evt) {
+  evt.preventDefault(); // Prevent default form submission behavior
 
-function handleAddFormSubmit(evt) {
-  evt.preventDefault();
-
+  // Create a new card data object from form inputs
   const newCardData = {
     name: placeNameInput.value,
     link: placeLinkInput.value,
   };
 
+  // Create the card element using the createCard function from card.js
   const newCard = createCard(newCardData, handleDelete, handleLikeClick);
-  cardList.prepend(newCard); // Добавляем новую карточку в начало списка
+  cardList.prepend(newCard); // Add the new card to the beginning of the list
 
-  addForm.reset(); // Очистить форму
-  closePopup(addModal); // Закрыть попап
+  addCardForm.reset(); // Clear the form fields
+  closePopup(addModal); // Close the add new card popup
 }
 
-addForm.addEventListener("submit", handleAddFormSubmit);
+// --- Event Listeners ---
 
-function handleLikeClick(button) {
-  button.classList.toggle("card__like-button_is-active");
-}
-
-// функция удаления
-function handleDelete(cardElement) {
-  cardElement.remove();
-}
-
-// добавление карточек из initialCards
-initialCards.forEach((cardData) => {
-  const card = createCard(cardData, handleDelete, handleLikeClick);
-  cardList.appendChild(card);
-});
-
-//попап редактировать
+// Open edit profile popup button click
 editButton.addEventListener("click", () => {
+  // Populate form fields with current profile info before opening
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
-  editModal.classList.add("popup_is-opened");
+  openPopup(editModal); // Open the edit profile popup
 });
 
-function closePopup(popup) {
-  popup.classList.remove("popup_is-opened");
-}
-
-function handleFormSubmit(evt) {
-  evt.preventDefault();
-
-  const nameValue = nameInput.value;
-  const jobValue = jobInput.value;
-
-  profileTitle.textContent = nameValue;
-  profileDescription.textContent = jobValue;
-
-  closePopup(editPopup);
-}
-
-formElement.addEventListener("submit", handleFormSubmit);
-
-//закрытие крестиком
-const closeButtons = document.querySelectorAll(".popup__close");
-closeButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const popup = button.closest(".popup");
-    popup.classList.remove("popup_is-opened");
-  });
-});
-
-//закрытие esc
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    const openedPopup = document.querySelector(".popup_is-opened");
-    if (openedPopup) {
-      openedPopup.classList.remove("popup_is-opened");
-    }
-  }
-});
-
-//закрытие по оверлею
-const popups = document.querySelectorAll(".popup");
-
-popups.forEach((popup) => {
-  popup.addEventListener("mousedown", (event) => {
-    if (event.target === popup) {
-      popup.classList.remove("popup_is-opened");
-    }
-  });
-});
-
-//функция добавления карточки
+// Open add new card popup button click
 addButton.addEventListener("click", () => {
-  addModal.classList.add("popup_is-opened");
+  openPopup(addModal); // Open the add new card popup
+});
+
+// Listen for edit profile form submission
+editProfileForm.addEventListener("submit", handleEditProfileSubmit);
+
+// Listen for add new card form submission
+addCardForm.addEventListener("submit", handleAddCardSubmit);
+
+// --- Initial Card Rendering ---
+
+// Loop through initialCards array and render each card on the page
+initialCards.forEach((cardData) => {
+  // Create card using the createCard function from card.js
+  const card = createCard(cardData, handleDelete, handleLikeClick);
+  cardList.appendChild(card); // Append the created card to the list
 });
