@@ -1,12 +1,7 @@
 
-// Import functions from modal.js to handle image popup
-import { openPopup } from "./modal.js";
-
-
- //Creates a new card element based on a template and provided data.
- //Attaches event listeners for delete, like, and image preview.
-
-export function createCard(data, onDelete, onLike) {
+//Creates a new card element based on a template and provided data.
+ 
+export function createCard(data, onDelete, onLike, onImageClick) {
   // Get the card template from the HTML
   const cardTemplate = document.querySelector("#card-template").content;
   // Clone the card element from the template to create a new one
@@ -18,54 +13,41 @@ export function createCard(data, onDelete, onLike) {
   const deleteButton = cardElement.querySelector(".card__delete-button");
   const likeButton = cardElement.querySelector(".card__like-button");
 
-  // Get the image popup elements from the DOM.
-  // We get these here because they are static elements that won't change.
-  const imageModal = document.querySelector(".popup_type_image");
-  const popUpImage = imageModal.querySelector(".popup__image");
-  const popUpCaption = imageModal.querySelector(".popup__caption");
-
   // Set the image source, alt text, and card title
   cardImage.src = data.link;
-  cardImage.alt = data.name;
+  cardImage.alt = data.name; // Important for accessibility
   cardTitle.textContent = data.name;
 
   // Add event listener for the delete button
   deleteButton.addEventListener("click", () => {
-    // Call the onDelete callback, passing the card element to be deleted
-    onDelete(cardElement);
+    onDelete(cardElement); // Call the onDelete callback, passing the card element to be deleted
   });
 
   // Add event listener for the like button
   likeButton.addEventListener("click", () => {
-    // Call the onLike callback, passing the like button itself
-    onLike(likeButton);
+    onLike(likeButton); // Call the onLike callback, passing the like button itself
   });
 
-  // Add event listener for clicking on the card image (to open image popup)
+  // Add event listener for clicking on the card image.
+  // Instead of directly manipulating the modal, we call the provided onImageClick callback.
+  // This makes the card component unaware of the specific modal implementation.
   cardImage.addEventListener("click", () => {
-    // Set the source and caption for the image popup
-    popUpImage.src = data.link;
-    popUpImage.alt = data.name; // Important for accessibility
-    popUpCaption.textContent = data.name;
-    openPopup(imageModal); // Open the image popup using the imported function
+    // Pass the image data (link and name) to the callback.
+    // This allows the callback (defined in index.js) to know what image to display.
+    onImageClick(data.link, data.name);
   });
 
   // Return the newly created and configured card element
   return cardElement;
 }
 
-/**
- * Toggles the active state of the like button.
- * @param {HTMLElement} button - The like button element.
- */
+//Toggles the active state of the like button.
+
 export function handleLikeClick(button) {
   button.classList.toggle("card__like-button_is-active");
 }
 
-/**
- * Removes a card element from the DOM.
- * @param {HTMLElement} cardElement - The card element to remove.
- */
+
 export function handleDelete(cardElement) {
   cardElement.remove();
 }

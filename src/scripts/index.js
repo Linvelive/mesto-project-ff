@@ -1,3 +1,5 @@
+// index.js
+
 // Import styles and initial data
 import "../styles/index.css";
 import { initialCards } from "./components/cards.js";
@@ -5,7 +7,8 @@ import avatar from "../images/avatar.jpg";
 import logo from "../images/logo.svg";
 
 // Import functions from other modules
-import { openPopup, closePopup, setClosePopupListeners } from "./components/modal.js";
+// setClosePopupListeners is no longer imported as its logic is moved here.
+import { openPopup, closePopup } from "./components/modal.js";
 import { createCard, handleDelete, handleLikeClick } from "./components/card.js";
 
 // --- DOM Nodes ---
@@ -23,6 +26,9 @@ const cardList = document.querySelector(".places__list");
 // Popups and their elements
 const editModal = document.querySelector(".popup_type_edit");
 const addModal = document.querySelector(".popup_type_new-card");
+const imageModal = document.querySelector(".popup_type_image");
+const popUpImage = imageModal.querySelector(".popup__image");
+const popUpCaption = imageModal.querySelector(".popup__caption");
 
 // Form elements for edit profile popup
 const editProfileForm = editModal.querySelector(".popup__form");
@@ -44,61 +50,63 @@ const placeLinkInput = addCardForm.querySelector(".popup__input_type_url");
 profileImage.style.backgroundImage = `url(${avatar})`;
 document.querySelector(".header__logo").src = logo;
 
-// Set up general popup closing listeners (escape, overlay, close button)
-setClosePopupListeners();
-
 // --- Event Handlers ---
 
-/**
- * Handles the submission of the edit profile form.
- * Updates profile title and description with input values.
- * @param {Event} evt - The form submission event.
- */
-function handleEditProfileSubmit(evt) {
-  evt.preventDefault(); // Prevent default form submission behavior
+//Handles the logic for opening the image popup.
 
-  // Update profile text content with current input values
+function handleImageClick(link, name) {
+  popUpImage.src = link;
+  popUpImage.alt = name;
+  popUpCaption.textContent = name;
+  openPopup(imageModal); // Use openPopup from modals.js
+}
+
+//Handles the submission of the edit profile form.
+
+function handleEditProfileSubmit(evt) {
+  evt.preventDefault();
+
   profileTitle.textContent = nameInput.value;
   profileDescription.textContent = jobInput.value;
 
-  closePopup(editModal); // Close the edit profile popup
+  closePopup(editModal); // Use closePopup from modals.js
 }
 
-/**
- * Handles the submission of the add new card form.
- * Creates a new card and adds it to the beginning of the card list.
- * @param {Event} evt - The form submission event.
- */
-function handleAddCardSubmit(evt) {
-  evt.preventDefault(); // Prevent default form submission behavior
+//Handles the submission of the add new card form.
 
-  // Create a new card data object from form inputs
+function handleAddCardSubmit(evt) {
+  evt.preventDefault();
+
   const newCardData = {
     name: placeNameInput.value,
     link: placeLinkInput.value,
   };
 
-  // Create the card element using the createCard function from card.js
-  const newCard = createCard(newCardData, handleDelete, handleLikeClick);
-  cardList.prepend(newCard); // Add the new card to the beginning of the list
+  const newCard = createCard(
+    newCardData,
+    handleDelete,
+    handleLikeClick,
+    handleImageClick
+  );
+  cardList.prepend(newCard);
 
-  addCardForm.reset(); // Clear the form fields
-  closePopup(addModal); // Close the add new card popup
+  addCardForm.reset();
+  closePopup(addModal); // Use closePopup from modals.js
 }
 
 // --- Event Listeners ---
 
 // Open edit profile popup button click
 editButton.addEventListener("click", () => {
-  // Populate form fields with current profile info before opening
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
-  openPopup(editModal); // Open the edit profile popup
+  openPopup(editModal); // Use openPopup from modals.js
 });
 
 // Open add new card popup button click
 addButton.addEventListener("click", () => {
-  openPopup(addModal); // Open the add new card popup
+  addCardForm.reset();
+  openPopup(addModal); // Use openPopup from modals.js
 });
 
 // Listen for edit profile form submission
@@ -107,11 +115,31 @@ editProfileForm.addEventListener("submit", handleEditProfileSubmit);
 // Listen for add new card form submission
 addCardForm.addEventListener("submit", handleAddCardSubmit);
 
+
+// --- Initialize Close Buttons for All Popups ---
+// This loop is now in index.js, taking responsibility for setting up all close handlers.
+const popups = document.querySelectorAll(".popup"); // Get all popup elements
+
+popups.forEach((popup) => {
+  const closeButton = popup.querySelector(".popup__content button"); // Find the close button for this specific popup
+
+  if (closeButton) {
+    closeButton.addEventListener("click", () => {
+      closePopup(popup); // Call closePopup when the close button is clicked
+    });
+  }
+  // The overlay and escape key listeners are now managed dynamically by openPopup/closePopup.
+});
+
+
 // --- Initial Card Rendering ---
 
-// Loop through initialCards array and render each card on the page
 initialCards.forEach((cardData) => {
-  // Create card using the createCard function from card.js
-  const card = createCard(cardData, handleDelete, handleLikeClick);
-  cardList.appendChild(card); // Append the created card to the list
+  const card = createCard(
+    cardData,
+    handleDelete,
+    handleLikeClick,
+    handleImageClick
+  );
+  cardList.appendChild(card);
 });
