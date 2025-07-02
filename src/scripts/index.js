@@ -6,10 +6,17 @@ import { initialCards } from "./components/cards.js";
 import avatar from "../images/avatar.jpg";
 import logo from "../images/logo.svg";
 
+// Import validation function
+import {} from "./components/validation.js";
+
 // Import functions from other modules
 // setClosePopupListeners is no longer imported as its logic is moved here.
 import { openPopup, closePopup } from "./components/modal.js";
-import { createCard, handleDelete, handleLikeClick } from "./components/card.js";
+import {
+  createCard,
+  handleDelete,
+  handleLikeClick,
+} from "./components/card.js";
 
 // --- DOM Nodes ---
 
@@ -100,12 +107,14 @@ function handleAddCardSubmit(evt) {
 editButton.addEventListener("click", () => {
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
+  clearValidationErrors(editProfileForm);
   openPopup(editModal); // Use openPopup from modals.js
 });
 
 // Open add new card popup button click
 addButton.addEventListener("click", () => {
   addCardForm.reset();
+  clearValidationErrors(addCardForm);
   openPopup(addModal); // Use openPopup from modals.js
 });
 
@@ -114,7 +123,6 @@ editProfileForm.addEventListener("submit", handleEditProfileSubmit);
 
 // Listen for add new card form submission
 addCardForm.addEventListener("submit", handleAddCardSubmit);
-
 
 // --- Initialize Close Buttons for All Popups ---
 // This loop is now in index.js, taking responsibility for setting up all close handlers.
@@ -131,7 +139,6 @@ popups.forEach((popup) => {
   // The overlay and escape key listeners are now managed dynamically by openPopup/closePopup.
 });
 
-
 // --- Initial Card Rendering ---
 
 initialCards.forEach((cardData) => {
@@ -142,4 +149,18 @@ initialCards.forEach((cardData) => {
     handleImageClick
   );
   cardList.appendChild(card);
+});
+
+import {
+  enableValidation,
+  clearValidationErrors,
+} from "./components/validation.js";
+
+enableValidation({
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
 });
