@@ -1,16 +1,9 @@
-// index.js
-
-// Import styles and initial data
+// --- Импорты ---
 import "../styles/index.css";
 import { initialCards } from "./components/cards.js";
 import avatar from "../images/avatar.jpg";
 import logo from "../images/logo.svg";
 
-// Import validation function
-import {} from "./components/validation.js";
-
-// Import functions from other modules
-// setClosePopupListeners is no longer imported as its logic is moved here.
 import { openPopup, closePopup } from "./components/modal.js";
 import {
   createCard,
@@ -18,69 +11,57 @@ import {
   handleLikeClick,
 } from "./components/card.js";
 
-// --- DOM Nodes ---
+import {
+  enableValidation,
+  clearValidation,
+} from "./components/validation.js";
 
-// Profile elements
+// --- Конфиг валидации ---
+const validationConfig = {
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
+};
+
+// --- DOM-узлы ---
 const profileImage = document.querySelector(".profile__image");
 const profileTitle = document.querySelector(".profile__title");
 const profileDescription = document.querySelector(".profile__description");
 const editButton = document.querySelector(".profile__edit-button");
 const addButton = document.querySelector(".profile__add-button");
 
-// Card list container
 const cardList = document.querySelector(".places__list");
 
-// Popups and their elements
 const editModal = document.querySelector(".popup_type_edit");
 const addModal = document.querySelector(".popup_type_new-card");
 const imageModal = document.querySelector(".popup_type_image");
 const popUpImage = imageModal.querySelector(".popup__image");
 const popUpCaption = imageModal.querySelector(".popup__caption");
 
-// Form elements for edit profile popup
 const editProfileForm = editModal.querySelector(".popup__form");
 const nameInput = editProfileForm.querySelector(".popup__input_type_name");
-const jobInput = editProfileForm.querySelector(
-  ".popup__input_type_description"
-);
+const jobInput = editProfileForm.querySelector(".popup__input_type_description");
 
-// Form elements for add new card popup
 const addCardForm = addModal.querySelector(".popup__form");
-const placeNameInput = addCardForm.querySelector(
-  ".popup__input_type_card-name"
-);
+const placeNameInput = addCardForm.querySelector(".popup__input_type_card-name");
 const placeLinkInput = addCardForm.querySelector(".popup__input_type_url");
 
-// --- Initial Setup ---
-
-// Set profile image and header logo
+// --- Установка аватара и логотипа ---
 profileImage.style.backgroundImage = `url(${avatar})`;
 document.querySelector(".header__logo").src = logo;
 
-// --- Event Handlers ---
-
-//Handles the logic for opening the image popup.
-
-function handleImageClick(link, name) {
-  popUpImage.src = link;
-  popUpImage.alt = name;
-  popUpCaption.textContent = name;
-  openPopup(imageModal); // Use openPopup from modals.js
-}
-
-//Handles the submission of the edit profile form.
-
+// --- Обработчики формы редактирования профиля ---
 function handleEditProfileSubmit(evt) {
   evt.preventDefault();
-
   profileTitle.textContent = nameInput.value;
   profileDescription.textContent = jobInput.value;
-
-  closePopup(editModal); // Use closePopup from modals.js
+  closePopup(editModal);
 }
 
-//Handles the submission of the add new card form.
-
+// --- Обработчики формы добавления карточки ---
 function handleAddCardSubmit(evt) {
   evt.preventDefault();
 
@@ -95,52 +76,41 @@ function handleAddCardSubmit(evt) {
     handleLikeClick,
     handleImageClick
   );
-  cardList.prepend(newCard);
 
+  cardList.prepend(newCard);
   addCardForm.reset();
-  closePopup(addModal); // Use closePopup from modals.js
+  closePopup(addModal);
 }
 
-// --- Event Listeners ---
-
-// Open edit profile popup button click
+// --- Открытие попапов ---
 editButton.addEventListener("click", () => {
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
-  clearValidationErrors(editProfileForm);
-  openPopup(editModal); // Use openPopup from modals.js
+  clearValidation(editProfileForm, validationConfig);
+  openPopup(editModal);
 });
 
-// Open add new card popup button click
 addButton.addEventListener("click", () => {
   addCardForm.reset();
-  clearValidationErrors(addCardForm);
-  openPopup(addModal); // Use openPopup from modals.js
+  clearValidation(addCardForm, validationConfig);
+  openPopup(addModal);
 });
 
-// Listen for edit profile form submission
+// --- Сабмиты ---
 editProfileForm.addEventListener("submit", handleEditProfileSubmit);
-
-// Listen for add new card form submission
 addCardForm.addEventListener("submit", handleAddCardSubmit);
 
-// --- Initialize Close Buttons for All Popups ---
-// This loop is now in index.js, taking responsibility for setting up all close handlers.
-const popups = document.querySelectorAll(".popup"); // Get all popup elements
-
-popups.forEach((popup) => {
-  const closeButton = popup.querySelector(".popup__content button"); // Find the close button for this specific popup
-
+// --- Закрытие попапов по кнопке ---
+document.querySelectorAll(".popup").forEach((popup) => {
+  const closeButton = popup.querySelector(".popup__content button");
   if (closeButton) {
     closeButton.addEventListener("click", () => {
-      closePopup(popup); // Call closePopup when the close button is clicked
+      closePopup(popup);
     });
   }
-  // The overlay and escape key listeners are now managed dynamically by openPopup/closePopup.
 });
 
-// --- Initial Card Rendering ---
-
+// --- Рендер стартовых карточек ---
 initialCards.forEach((cardData) => {
   const card = createCard(
     cardData,
@@ -151,16 +121,13 @@ initialCards.forEach((cardData) => {
   cardList.appendChild(card);
 });
 
-import {
-  enableValidation,
-  clearValidationErrors,
-} from "./components/validation.js";
+// --- Активация валидации ---
+enableValidation(validationConfig);
 
-enableValidation({
-  formSelector: ".popup__form",
-  inputSelector: ".popup__input",
-  submitButtonSelector: ".popup__button",
-  inactiveButtonClass: "popup__button_disabled",
-  inputErrorClass: "popup__input_type_error",
-  errorClass: "popup__error_visible",
-});
+// --- Обработка клика по картинке карточки ---
+function handleImageClick(link, name) {
+  popUpImage.src = link;
+  popUpImage.alt = name;
+  popUpCaption.textContent = name;
+  openPopup(imageModal);
+}

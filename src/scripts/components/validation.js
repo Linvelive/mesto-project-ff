@@ -1,4 +1,4 @@
-// Show error
+// Показать ошибку
 function showInputError(formElement, inputElement, config, message) {
   const errorElement = formElement.querySelector(`#${inputElement.name}-error`);
   inputElement.classList.add(config.inputErrorClass);
@@ -6,7 +6,7 @@ function showInputError(formElement, inputElement, config, message) {
   errorElement.classList.add(config.errorClass);
 }
 
-// Hiding error
+// Скрыть ошибку
 function hideInputError(formElement, inputElement, config) {
   const errorElement = formElement.querySelector(`#${inputElement.name}-error`);
   inputElement.classList.remove(config.inputErrorClass);
@@ -14,10 +14,9 @@ function hideInputError(formElement, inputElement, config) {
   errorElement.classList.remove(config.errorClass);
 }
 
-// Checking validation
+// Проверка одного поля
 function checkInputValidity(formElement, inputElement, config) {
   const value = inputElement.value.trim();
-  const pattern = /^[a-zA-Zа-яА-ЯёЁ\- ]+$/;
 
   if (inputElement.validity.valueMissing) {
     showInputError(formElement, inputElement, config, "Вы пропустили это поле");
@@ -25,14 +24,9 @@ function checkInputValidity(formElement, inputElement, config) {
   }
 
   if (inputElement.type === "url" && !inputElement.validity.valid) {
-  showInputError(
-    formElement,
-    inputElement,
-    config,
-    'Введите адрес сайта.'
-  );
-  return false;
-}
+    showInputError(formElement, inputElement, config, "Введите адрес сайта.");
+    return false;
+  }
 
   if (value.length < inputElement.minLength) {
     showInputError(
@@ -44,22 +38,25 @@ function checkInputValidity(formElement, inputElement, config) {
     return false;
   }
 
- // Pattern 
-if (inputElement.hasAttribute("pattern") && !pattern.test(value)) {
-  showInputError(formElement, inputElement, config, 'Можно использовать только буквы, пробел и дефис');
-  return false;
-}
+  if (inputElement.hasAttribute("pattern")) {
+    const pattern = new RegExp(inputElement.getAttribute("pattern"));
+    if (!pattern.test(value)) {
+      const customMessage = inputElement.dataset.errorPattern || "Поле заполнено некорректно";
+      showInputError(formElement, inputElement, config, customMessage);
+      return false;
+    }
+  }
 
   hideInputError(formElement, inputElement, config);
   return true;
 }
 
-// Checking validity all inputs
+// Проверка всех полей
 function hasInvalidInput(inputList) {
   return inputList.some((inputElement) => !inputElement.validity.valid);
 }
 
-// Button inactivation 
+// Включение/отключение кнопки
 function toggleButtonState(inputList, buttonElement, config) {
   if (hasInvalidInput(inputList)) {
     buttonElement.classList.add(config.inactiveButtonClass);
@@ -70,11 +67,9 @@ function toggleButtonState(inputList, buttonElement, config) {
   }
 }
 
-// Навешиваем обработчики на инпуты формы
+// Навесить обработчики
 function setEventListeners(formElement, config) {
-  const inputList = Array.from(
-    formElement.querySelectorAll(config.inputSelector)
-  );
+  const inputList = Array.from(formElement.querySelectorAll(config.inputSelector));
   const buttonElement = formElement.querySelector(config.submitButtonSelector);
 
   toggleButtonState(inputList, buttonElement, config);
@@ -87,7 +82,7 @@ function setEventListeners(formElement, config) {
   });
 }
 
-// Запускаем валидацию для всех форм
+// Включить валидацию всех форм
 export function enableValidation(config) {
   const forms = Array.from(document.querySelectorAll(config.formSelector));
   forms.forEach((formElement) => {
@@ -95,20 +90,23 @@ export function enableValidation(config) {
   });
 }
 
-// Очистка ошибок при открытии модального окна
-export function clearValidationErrors(formElement) {
-  const errorElements = formElement.querySelectorAll(".popup__error");
-  const inputElements = formElement.querySelectorAll(".popup__input");
+// Очистить ошибки и деактивировать кнопку
+export function clearValidation(formElement, config) {
+  const errorElements = formElement.querySelectorAll(`.${config.errorClass}`);
+  const inputElements = formElement.querySelectorAll(config.inputSelector);
+  const button = formElement.querySelector(config.submitButtonSelector);
 
-  inputElements.forEach((input) =>
-    input.classList.remove("popup__input_type_error")
-  );
-  errorElements.forEach((error) => {
-    error.textContent = "";
-    error.classList.remove("popup__error_visible");
+  inputElements.forEach((input) => {
+    input.classList.remove(config.inputErrorClass);
   });
 
-  const button = formElement.querySelector(".popup__button");
-  button.disabled = false;
-  button.classList.remove("popup__button_disabled");
+  errorElements.forEach((errorEl) => {
+    errorEl.textContent = "";
+    errorEl.classList.remove(config.errorClass);
+  });
+
+  if (button) {
+    button.disabled = true;
+    button.classList.add(config.inactiveButtonClass);
+  }
 }
