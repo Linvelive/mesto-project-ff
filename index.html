@@ -16,7 +16,14 @@
       </header>
       <main class="content">
         <section class="profile page__section">
-          <div class="profile__image"></div>
+          <div class="profile__image">
+            <div class="profile__image-overlay"></div>
+            <img
+              src="./images/edit-icon.svg"
+              alt="Редактировать"
+              class="profile__avatar-edit-icon"
+            />
+          </div>
           <div class="profile__info">
             <h1 class="profile__title">Жак-Ив Кусто</h1>
             <button class="profile__edit-button" type="button"></button>
@@ -118,9 +125,38 @@
         <button type="button" class="card__delete-button"></button>
         <div class="card__description">
           <h2 class="card__title"></h2>
-          <button type="button" class="card__like-button"></button>
+          <div class="card__like-wrapper">
+            <button type="button" class="card__like-button"></button>
+            <span class="card__like-count">0</span>
+          </div>
         </div>
       </li>
     </template>
+    <div class="popup popup_type_confirm">
+      <div class="popup__content popup__content_type_small">
+        <button type="button" class="popup__close"></button>
+        <h3 class="popup__title">Вы уверены?</h3>
+        <form class="popup__form" name="confirm-delete">
+          <button type="submit" class="popup__button">Да</button>
+        </form>
+      </div>
+    </div>
+    <div class="popup popup_type_avatar">
+      <div class="popup__content">
+        <button type="button" class="popup__close"></button>
+        <h3 class="popup__title">Обновить аватар</h3>
+        <form class="popup__form" name="avatar-form">
+          <input
+            type="url"
+            name="avatar"
+            class="popup__input popup__input_type_avatar"
+            placeholder="Ссылка на аватар"
+            required
+          />
+          <span class="popup__error" id="avatar-error"></span>
+          <button type="submit" class="popup__button">Сохранить</button>
+        </form>
+      </div>
+    </div>
   </body>
 </html>
