@@ -1,3 +1,3 @@
 # Проектная работа Mesto
 
-https://github.com/Linvelive/mesto-project-ff
+https://linvelive.github.io/mesto-project-ff/
