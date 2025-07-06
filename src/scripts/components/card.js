@@ -1,7 +1,3 @@
-//Creates a new card element based on a template and provided data.
-import { deleteCard } from '../api.js';
-import { confirmPopup, cardToDelete, cardIdToDelete } from "../index.js";
-import { openPopup } from "./modal.js";
 export function createCard(data, onDelete, onLike, onImageClick, userId) {
   // Get the card template from the HTML
   const cardTemplate = document.querySelector("#card-template").content;
@@ -29,9 +25,6 @@ export function createCard(data, onDelete, onLike, onImageClick, userId) {
   }
 
   // Add event listener for the delete button
-  deleteButton.addEventListener("click", () => {
-    onDelete(cardElement); // Call the onDelete callback, passing the card element to be deleted
-  });
 
   likeCount.textContent = data.likes.length;
 
@@ -56,7 +49,7 @@ export function createCard(data, onDelete, onLike, onImageClick, userId) {
 }
 
 //Toggles the active state of the like button.
-import { changeLikeCardStatus } from '../api';
+import { changeLikeCardStatus } from "../api";
 
 export function handleLikeClick(cardElement, cardId, likeButton, likeCount) {
   const isLiked = likeButton.classList.contains("card__like-button_is-active");
@@ -70,11 +63,3 @@ export function handleLikeClick(cardElement, cardId, likeButton, likeCount) {
       console.error("Ошибка при изменении лайка:", err);
     });
 }
-
-export function handleDelete(cardElement, cardId) {
-  // сохраняем DOM-элемент и id карточки, чтобы использовать при подтверждении
-  cardToDelete.value = cardElement;
-  cardIdToDelete.value = cardId;
-
-  openPopup(confirmPopup);
-} 

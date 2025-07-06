@@ -1,7 +1,6 @@
 let currentUserId = null;
 // --- Импорты ---
 import "../styles/index.css";
-import avatar from "../images/avatar.jpg";
 import logo from "../images/logo.svg";
 import {
   getUserInfo,
@@ -25,7 +24,6 @@ Promise.all([getUserInfo(), getInitialCards()])
 import { openPopup, closePopup } from "./components/modal.js";
 import {
   createCard,
-  handleDelete,
   handleLikeClick,
 } from "./components/card.js";
 
@@ -101,8 +99,7 @@ const confirmForm = confirmPopup.querySelector(".popup__form");
 export const cardToDelete = { value: null };
 export const cardIdToDelete = { value: null };
 
-// --- Установка аватара и логотипа ---
-profileImage.style.backgroundImage = `url(${avatar})`;
+// --- Установка логотипа ---
 document.querySelector(".header__logo").src = logo;
 
 // --- Обработчики формы редактирования профиля ---
@@ -192,6 +189,14 @@ function handleImageClick(link, name) {
   popUpCaption.textContent = name;
   openPopup(imageModal);
 }
+
+ function handleDelete(cardElement, cardId) {
+  // сохраняем DOM-элемент и id карточки, чтобы использовать при подтверждении
+  cardToDelete.value = cardElement;
+  cardIdToDelete.value = cardId;
+
+  openPopup(confirmPopup);
+} 
 
 confirmForm.addEventListener("submit", (evt) => {
   evt.preventDefault();

@@ -16,35 +16,22 @@ function hideInputError(formElement, inputElement, config) {
 
 // Проверка одного поля
 function checkInputValidity(formElement, inputElement, config) {
-  const value = inputElement.value.trim();
-
-  if (inputElement.validity.valueMissing) {
-    showInputError(formElement, inputElement, config, "Вы пропустили это поле");
-    return false;
+  if (inputElement.validity.patternMismatch) {
+    inputElement.setCustomValidity(
+      inputElement.dataset.errorPattern || "Поле заполнено некорректно"
+    );
+  } else {
+    inputElement.setCustomValidity("");
   }
 
-  if (inputElement.type === "url" && !inputElement.validity.valid) {
-    showInputError(formElement, inputElement, config, "Введите адрес сайта.");
-    return false;
-  }
-
-  if (value.length < inputElement.minLength) {
+  if (!inputElement.validity.valid) {
     showInputError(
       formElement,
       inputElement,
       config,
-      `Минимальное количество символов: ${inputElement.minLength}. Длина текста сейчас: ${value.length} символ.`
+      inputElement.validationMessage
     );
     return false;
-  }
-
-  if (inputElement.hasAttribute("pattern")) {
-    const pattern = new RegExp(inputElement.getAttribute("pattern"));
-    if (!pattern.test(value)) {
-      const customMessage = inputElement.dataset.errorPattern || "Поле заполнено некорректно";
-      showInputError(formElement, inputElement, config, customMessage);
-      return false;
-    }
   }
 
   hideInputError(formElement, inputElement, config);
@@ -69,7 +56,9 @@ function toggleButtonState(inputList, buttonElement, config) {
 
 // Навесить обработчики
 function setEventListeners(formElement, config) {
-  const inputList = Array.from(formElement.querySelectorAll(config.inputSelector));
+  const inputList = Array.from(
+    formElement.querySelectorAll(config.inputSelector)
+  );
   const buttonElement = formElement.querySelector(config.submitButtonSelector);
 
   toggleButtonState(inputList, buttonElement, config);
@@ -92,21 +81,14 @@ export function enableValidation(config) {
 
 // Очистить ошибки и деактивировать кнопку
 export function clearValidation(formElement, config) {
-  const errorElements = formElement.querySelectorAll(`.${config.errorClass}`);
-  const inputElements = formElement.querySelectorAll(config.inputSelector);
+  const inputList = Array.from(
+    formElement.querySelectorAll(config.inputSelector)
+  );
   const button = formElement.querySelector(config.submitButtonSelector);
 
-  inputElements.forEach((input) => {
-    input.classList.remove(config.inputErrorClass);
+  inputList.forEach((inputElement) => {
+    hideInputError(formElement, inputElement, config);
   });
 
-  errorElements.forEach((errorEl) => {
-    errorEl.textContent = "";
-    errorEl.classList.remove(config.errorClass);
-  });
-
-  if (button) {
-    button.disabled = true;
-    button.classList.add(config.inactiveButtonClass);
-  }
+  toggleButtonState(inputList, button, config);
 }
